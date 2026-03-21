@@ -2,10 +2,8 @@ import json
 import os
 import time
 import logging
-from urllib import response
 import boto3
-import urllib.request
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import urllib3
 from botocore.exceptions import ClientError
@@ -21,7 +19,7 @@ secrets_client = boto3.client('secretsmanager')
 #CDK environment variables
 TABLE_NAME = os.environ['TABLE_NAME']
 SECRET_NAME = os.environ.get('SECRET_NAME', 'MassiveApiKey')
-API_BASE_URL = os.environ.get('API_BASE_URL', 'https://api.massiveapi.com/')
+API_BASE_URL = os.environ.get('API_BASE_URL', 'https://api.massive.com')
 WATCHLIST = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA"]
 
 table = dynamodb.Table(TABLE_NAME)
@@ -35,22 +33,28 @@ def get_api_key():
           raise
     
 def get_target_date():
-    target = datetime.now(timezone='US/western').date() - timedelta(days=1)
+    target = datetime.now(timezone.utc).date() - timedelta(days=1)
     while target.weekday() >= 5:  # Skip weekends
-          target -= timedelta(days=1)
-          return target.isoformat()
+         target -= timedelta(days=1)
+    return target.isoformat()
 
 def handler(event, context):
         logger.info("Starting Ingestion")
         try:
-            api_key = get_api_key(SECRET_NAME)
+            api_key = get_api_key()
             date_str = get_target_date()
             candidates = []
 
+            #Secure headers
+            headers = {
+                 "Authorization": f"Bearer {api_key}",
+                 "Accept": "application/json"
+            }
+
             for ticker in WATCHLIST:
-                url = f"{API_BASE_URL}/v1/open-close/{ticker}/{date_str}?adjusted=true&apiKey={api_key}"
+                url = f"{API_BASE_URL}/v1/open-close/{ticker}/{date_str}?adjusted=true"
                 try:
-                    response = http.request('GET', url, timeout=10.0)
+                    response = http.request('GET', url, headers=headers, timeout=10.0)
                         
                     if response.status == 200:
                         data = json.loads(response.data.decode('utf-8'))

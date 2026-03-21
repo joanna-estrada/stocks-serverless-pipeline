@@ -39,7 +39,7 @@ class BackendStack(Stack):
             environment={
                 "TABLE_NAME": table.table_name,
                 "SECRET_NAME": "MassiveApiKey",
-                "API_BASE_URL": "https://api.massiveapi.com/",
+                "API_BASE_URL": "https://api.massive.com",
             },
         )
 
@@ -50,7 +50,7 @@ class BackendStack(Stack):
         ingestion_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["secretsmanager:GetSecretValue"],
-                resources=["*"],
+                resources=[f"arn:aws:secretsmanager:{self.region}:{self.account}:secret:MassiveApiKey*"],
             )
         )
 
