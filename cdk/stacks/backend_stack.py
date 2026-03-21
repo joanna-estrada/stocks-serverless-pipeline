@@ -33,8 +33,8 @@ class BackendStack(Stack):
             self,"IngestionLambda",
             function_name="IngestionLambda",
             runtime=_lambda.Runtime.PYTHON_3_11,
-            handler="lambda_function.handler",
-            code=_lambda.Code.from_asset("lambda"),
+            handler="ingestion.handler",
+            code=_lambda.Code.from_asset("../lambdas/ingestion"),
             environment={
                 "TABLE_NAME": table.table_name,
             },
@@ -59,7 +59,7 @@ class BackendStack(Stack):
                 minute="0",
                 hour="22",
                 month="*",
-                weekday="MON-FRI",
+                week_day="MON-FRI",
                 year="*",
             )
         )
@@ -71,7 +71,7 @@ class BackendStack(Stack):
             function_name="stock-api",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="api_lambda.handler",
-            code=_lambda.Code.from_asset("api_lambda"),
+            code=_lambda.Code.from_asset("../lambdas/api"),
             timeout=Duration.seconds(10),
             environment={
                 "TABLE_NAME": table.table_name,
