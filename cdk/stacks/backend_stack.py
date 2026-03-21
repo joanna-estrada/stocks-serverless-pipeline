@@ -35,8 +35,11 @@ class BackendStack(Stack):
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="ingestion.handler",
             code=_lambda.Code.from_asset("../lambdas/ingestion"),
+            timeout=Duration.seconds(30),
             environment={
                 "TABLE_NAME": table.table_name,
+                "SECRET_NAME": "MassiveApiKey",
+                "API_BASE_URL": "https://api.massiveapi.com/",
             },
         )
 
