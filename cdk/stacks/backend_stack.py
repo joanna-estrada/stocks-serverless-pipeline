@@ -84,18 +84,22 @@ class BackendStack(Stack):
         table.grant_read_data(api_lambda)
 
 
+        #Amplify 
+        amplify_url = "https://main.d2o5xbreubwc5h.amplifyapp.com/"
+
         # Create API Gateway REST API
         api = apigw.RestApi(
             self, "StockDataApi",
             rest_api_name="Stock Data Service",
             default_cors_preflight_options=apigw.CorsOptions(
-                allow_origins=apigw.Cors.ALL_ORIGINS, #TODO: change later to AWS Amplify domain
+                allow_origins=[amplify_url, "http://localhost:3000"], 
                 allow_methods=["GET", "POST", "OPTIONS"],
+                allow_headers=["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key"]
             )
         )
 
-        movers = api.root.add_resource("top-movers")
-        movers.add_method(
+        top_movers = api.root.add_resource("top-movers")
+        top_movers.add_method(
             "GET",
             apigw.LambdaIntegration(api_lambda),
         )

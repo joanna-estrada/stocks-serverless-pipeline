@@ -18,11 +18,12 @@ def handler(event, context):
         items = response.get('Items', [])
         #Sort, 7 days history
         sorted_items = sorted(items, key=lambda x: x['timestamp'], reverse=True)[:7]
-        return{
+        return {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': 'https://main.d2o5xbreubwc5h.amplifyapp.com/',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS'
             },
             'body': json.dumps(sorted_items, cls=DecimalEncoder)
         }
