@@ -1,5 +1,6 @@
 from aws_cdk import (
     Stack,
+    CfnOutput,
     aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_apigateway as apigw,
@@ -11,7 +12,6 @@ from aws_cdk import (
 )
 
 from constructs import Construct
-
 class BackendStack(Stack):
     def __init__(self,scope: Construct, construct_id: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
@@ -84,22 +84,54 @@ class BackendStack(Stack):
         table.grant_read_data(api_lambda)
 
 
-        #Amplify 
-        amplify_url = "https://main.d2o5xbreubwc5h.amplifyapp.com/"
+        #Amplify
+        amplify_url = "https://main.d2o5xbreubwc5h.amplifyapp.com"
+        allowed_origins = f"{amplify_url},http://localhost:3000"
 
         # Create API Gateway REST API
         api = apigw.RestApi(
             self, "StockDataApi",
             rest_api_name="Stock Data Service",
             default_cors_preflight_options=apigw.CorsOptions(
-                allow_origins=[amplify_url, "http://localhost:3000"], 
-                allow_methods=["GET", "POST", "OPTIONS"],
+                allow_origins=[amplify_url, "http://localhost:3000"],
+                allow_methods=["GET", "OPTIONS"],
                 allow_headers=["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key"]
             )
         )
+
+        api_lambda.add_environment("ALLOWED_ORIGINS", allowed_origins)
 
         top_movers = api.root.add_resource("top-movers")
         top_movers.add_method(
             "GET",
             apigw.LambdaIntegration(api_lambda),
         )
+
+        watchlist_lambda = _lambda.Function(
+            self, "WatchlistLambda",
+            function_name="stock-watchlist",
+            runtime=_lambda.Runtime.PYTHON_3_11,
+            handler="watchlist_lambda.handler",
+            code=_lambda.Code.from_asset("../lambdas/watchlist"),
+            timeout=Duration.seconds(20),
+            environment={
+                "SECRET_NAME": "MassiveApiKey",
+                "API_BASE_URL": "https://api.massive.com",
+                "ALLOWED_ORIGINS": allowed_origins,
+            },
+        )
+
+        watchlist_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["secretsmanager:GetSecretValue"],
+                resources=[f"arn:aws:secretsmanager:{self.region}:{self.account}:secret:MassiveApiKey*"],
+            )
+        )
+
+        watchlist = api.root.add_resource("watchlist")
+        watchlist.add_method(
+            "GET",
+            apigw.LambdaIntegration(watchlist_lambda),
+        )
+
+        CfnOutput(self, "StockApiUrl", value=api.url)
