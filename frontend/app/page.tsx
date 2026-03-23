@@ -156,7 +156,7 @@ export default function Home() {
 
       const [watchlistResult, historyResult] = await Promise.allSettled([
         fetchJson<{ watchlist: WatchlistRow[] }>("/watchlist"),
-        fetchJson<{ movers: TopMover[] }>("/top-movers?days=5"),
+        fetchJson<{ movers: TopMover[] }>("/top-movers?days=7"),
       ]);
 
       if (!isMounted) {

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 
 import boto3
 import urllib3
@@ -149,6 +150,9 @@ def build_watchlist_rows(api_key):
             'volume': first_numeric(data.get('volume')),
             'date': date_str,   
         })
+        #Add delay between requests to avoid hitting API rate limits
+        if ticker != WATCHLIST[-1]:
+            time.sleep(2.5)
     return rows
 
 

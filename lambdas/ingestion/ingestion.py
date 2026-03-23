@@ -94,7 +94,7 @@ def handler(event, context):
                         'closing_price': close_price,
                         'timestamp': datetime.now(timezone.utc).isoformat()
                     })
-                    time.sleep(0.5)  # Rate limiting
+                    time.sleep(2.5)  # Rate limiting
                 else:
                     logger.warning(f"Failed to fetch data for {ticker} on {date_str}: {response.status}")
                 

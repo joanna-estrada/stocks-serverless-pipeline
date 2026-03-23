@@ -88,7 +88,19 @@ def handler(event, context):
     try:
         items = get_scan_items()
         limit = get_limit(event)
-        sorted_items = sorted(items, key=lambda x: x['timestamp'], reverse=True)[:limit]
+        # Deduplicate by date - keep the most recent entry for each date
+        date_map = {}
+        for item in items:
+            date = item.get('date', '')
+            timestamp = item.get('timestamp', '')
+            
+            # If this date doesn't exist yet, or this entry is newer, use it
+            if date not in date_map or timestamp > date_map[date].get('timestamp', ''):
+                date_map[date] = item
+        
+        # Convert back to list and sort
+        unique_items = list(date_map.values())
+        sorted_items = sorted(unique_items, key=lambda x: x.get('date', ''), reverse=True)[:limit]
         movers = [normalize_item(item) for item in sorted_items]
         return build_response(200, {'movers': movers}, origin)
     except Exception as e:
