@@ -1,15 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 type WatchlistRow = {
   ticker: string;
@@ -28,33 +19,10 @@ type TopMover = {
   closing_price: number;
 };
 
-type ChartRow = {
-  ticker: string;
-  positive: number;
-  negative: number;
-  total: number;
-};
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_STOCK_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
 const WATCHLIST_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA"];
-
-const PERIOD_OPTIONS = [
-  { label: "7 days", value: "7", days: 7 },
-  { label: "1 month", value: "30", days: 30 },
-  { label: "6 months", value: "180", days: 180 },
-  { label: "1 year", value: "365", days: 365 },
-] as const;
-
-const CHART_SKELETON_HEIGHTS = [
-  "h-24",
-  "h-32",
-  "h-40",
-  "h-28",
-  "h-36",
-  "h-20",
-];
 
 function formatCurrency(value: number | null) {
   if (value === null || Number.isNaN(value)) {
@@ -168,8 +136,6 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 export default function Home() {
   const [searchValue, setSearchValue] = useState("");
-  const [selectedPeriod, setSelectedPeriod] =
-    useState<(typeof PERIOD_OPTIONS)[number]["value"]>("30");
 
   const [watchlist, setWatchlist] = useState<WatchlistRow[]>([]);
   const [watchlistLoading, setWatchlistLoading] = useState(true);
@@ -178,10 +144,6 @@ export default function Home() {
   const [historyMovers, setHistoryMovers] = useState<TopMover[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
-
-  const [chartMovers, setChartMovers] = useState<TopMover[]>([]);
-  const [chartLoading, setChartLoading] = useState(true);
-  const [chartError, setChartError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -234,52 +196,6 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
-    const selectedOption = PERIOD_OPTIONS.find(
-      (option) => option.value === selectedPeriod,
-    );
-
-    async function loadChartData() {
-      setChartLoading(true);
-      setChartError(null);
-
-      try {
-        const response = await fetchJson<{ movers: TopMover[] }>(
-          `/top-movers?days=${selectedOption?.days ?? 30}`,
-        );
-
-        if (!isMounted) {
-          return;
-        }
-
-        setChartMovers(response.movers ?? []);
-      } catch (error) {
-        console.error("Failed to load chart data", error);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setChartError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load frequency data right now.",
-        );
-      } finally {
-        if (isMounted) {
-          setChartLoading(false);
-        }
-      }
-    }
-
-    loadChartData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedPeriod]);
-
   const latestMover = historyMovers[0] ?? null;
 
   const watchlistCompanyMap = useMemo(
@@ -287,35 +203,6 @@ export default function Home() {
     [watchlist],
   );
 
-  const chartData = useMemo<ChartRow[]>(() => {
-    const counts = new Map<string, ChartRow>();
-
-    for (const mover of chartMovers) {
-      const current = counts.get(mover.ticker) ?? {
-        ticker: mover.ticker,
-        positive: 0,
-        negative: 0,
-        total: 0,
-      };
-
-      if (mover.change_percent >= 0) {
-        current.positive += 1;
-      } else {
-        current.negative += 1;
-      }
-
-      current.total += 1;
-      counts.set(mover.ticker, current);
-    }
-
-    return Array.from(counts.values()).sort((left, right) => {
-      if (right.total !== left.total) {
-        return right.total - left.total;
-      }
-
-      return left.ticker.localeCompare(right.ticker);
-    });
-  }, [chartMovers]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#ffffff_0%,#f7f6f2_45%,#ece9df_100%)] text-foreground">
@@ -476,7 +363,6 @@ export default function Home() {
                         )}`}
                       >
                         <div className="flex flex-col gap-1 text-right text-xl sm:text-2xl">
-                          <span>{formatSignedCurrency(latestMover.absolute_change)}</span>
                           <span>{formatSignedPercent(latestMover.change_percent)}</span>
                         </div>
 
@@ -556,90 +442,6 @@ export default function Home() {
                   </table>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-4xl border border-black/10 bg-white/80 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.06)] backdrop-blur sm:p-8">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <h2 className="text-2xl font-semibold">Greatest Mover, Frequency</h2>
-
-              <label className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] text-black/65">
-                <span>Period</span>
-                <select
-                  value={selectedPeriod}
-                  onChange={(event) =>
-                    setSelectedPeriod(
-                      event.target.value as (typeof PERIOD_OPTIONS)[number]["value"],
-                    )
-                  }
-                  className="rounded-full border border-black/15 bg-white px-4 py-2 text-base font-normal outline-none transition focus:border-(--color-teal)"
-                >
-                  {PERIOD_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="flex flex-wrap gap-6 text-sm sm:text-base">
-              <div className="flex items-center gap-3">
-                <span className="h-4 w-4 rounded-sm bg-(--color-positive)" />
-                <span>Positive gains</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="h-4 w-4 rounded-sm bg-(--color-negative)" />
-                <span>Negative losses</span>
-              </div>
-            </div>
-
-            {chartError ? (
-              <div className="rounded-3xl border border-(--color-negative)/20 bg-(--color-negative)/5 px-4 py-3 text-sm text-(--color-negative)">
-                {chartError}
-              </div>
-            ) : null}
-
-            <div className="h-88 rounded-[1.75rem] border border-black/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(246,243,235,0.85))] p-3 sm:h-104 sm:p-5">
-              {chartLoading ? (
-                <div className="flex h-full items-end gap-4 px-4 pb-4">
-                  {CHART_SKELETON_HEIGHTS.map((heightClass, index) => (
-                    <div key={index} className="flex flex-1 flex-col items-center gap-3">
-                      <div className={`w-full animate-pulse rounded-t-3xl bg-black/8 ${heightClass}`} />
-                      <div className="h-4 w-12 animate-pulse rounded-full bg-black/8" />
-                    </div>
-                  ))}
-                </div>
-              ) : chartData.length ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 12, right: 16, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
-                    <XAxis dataKey="ticker" tickLine={false} axisLine={false} />
-                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-                    <Tooltip />
-                    <Bar
-                      dataKey="positive"
-                      stackId="movers"
-                      fill="var(--color-positive)"
-                      radius={[10, 10, 0, 0]}
-                      name="Positive gains"
-                    />
-                    <Bar
-                      dataKey="negative"
-                      stackId="movers"
-                      fill="var(--color-negative)"
-                      radius={[10, 10, 0, 0]}
-                      name="Negative losses"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-full items-center justify-center text-center text-black/60">
-                  No top-mover frequency data is available for this period.
-                </div>
-              )}
             </div>
           </div>
         </section>

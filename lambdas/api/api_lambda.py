@@ -78,7 +78,6 @@ def normalize_item(item):
         'date': date,
         'ticker': item.get('ticker'),
         'change_percent': item.get('change_percent'),
-        'absolute_change': item.get('absolute_change'),
         'closing_price': item.get('closing_price', item.get('price')),
     }
 

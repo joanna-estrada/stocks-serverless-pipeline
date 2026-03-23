@@ -94,8 +94,10 @@ def handler(event, context):
                         'closing_price': close_price,
                         'timestamp': datetime.now(timezone.utc).isoformat()
                     })
+                    time.sleep(0.5)  # Rate limiting
                 else:
                     logger.warning(f"Failed to fetch data for {ticker} on {date_str}: {response.status}")
+                
             except Exception as e:
                 logger.error(f"Error fetching data for {ticker} on {date_str}: {e}")
 
@@ -109,9 +111,7 @@ def handler(event, context):
                 'date': winner['date'],
                 'ticker': winner['ticker'],
                 'change_percent': Decimal(str(winner['change_percent'])),
-                'absolute_change': Decimal(str(winner['absolute_change'])),
                 'closing_price': Decimal(str(winner['closing_price'])),
-                'price': Decimal(str(winner['closing_price']))
             }
         )
         logger.info(f"Inserted top mover: {winner['ticker']} with change {winner['change_percent']}%")
