@@ -41,7 +41,7 @@ const API_BASE_URL =
 const WATCHLIST_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA"];
 
 const PERIOD_OPTIONS = [
-  { label: "5 days", value: "5", days: 5 },
+  { label: "7 days", value: "7", days: 7 },
   { label: "1 month", value: "30", days: 30 },
   { label: "6 months", value: "180", days: 180 },
   { label: "1 year", value: "365", days: 365 },
@@ -508,7 +508,7 @@ export default function Home() {
 
           <div className="rounded-4xl border border-black/10 bg-white/80 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.06)] backdrop-blur sm:p-8">
             <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-semibold">Greatest Mover History (5 days)</h2>
+              <h2 className="text-2xl font-semibold">Greatest Mover History (7 days)</h2>
 
               <div className="overflow-hidden rounded-3xl border border-black/10 bg-white">
                 <div className="overflow-x-auto">

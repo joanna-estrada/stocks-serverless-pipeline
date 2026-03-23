@@ -35,13 +35,29 @@ def get_api_key():
 
 
 def get_target_date():
-    eastern_now = datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York"))
+    MARKET_HOLIDAYS = {
+    "2026-01-01",
+    "2026-01-19",
+    "2026-02-16",
+    "2026-04-03",  
+    "2026-05-25",
+    "2026-06-19",
+    "2026-07-03",
+    "2026-09-07",
+    "2026-11-26",
+    "2026-12-25",
+    }
+    
+    eastern_now = datetime.now(timezone.utc).astimezone(
+        ZoneInfo("America/New_York")
+    )
+
     target = eastern_now.date()
 
     if eastern_now.hour < 16:
         target -= timedelta(days=1)
 
-    while target.weekday() >= 5:  # Skip weekends
+    while target.weekday() >= 5 or target.isoformat() in MARKET_HOLIDAYS:
         target -= timedelta(days=1)
 
     return target.isoformat()
@@ -73,9 +89,9 @@ def handler(event, context):
                     candidates.append({
                         'date': date_str,
                         'ticker': ticker,
-                        'change_percent': round(change_percent, 2),
-                        'absolute_change': round(absolute_change, 2),
-                        'closing_price': round(close_price, 2),
+                        'change_percent': change_percent,
+                        'absolute_change': absolute_change,
+                        'closing_price': close_price,
                         'timestamp': datetime.now(timezone.utc).isoformat()
                     })
                 else:

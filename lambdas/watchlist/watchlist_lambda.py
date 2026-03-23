@@ -21,8 +21,7 @@ MARKET_HOLIDAYS = {
     "2026-01-01",  # New Year's Day
     "2026-01-19",  # MLK Day
     "2026-02-16",  # Presidents Day
-    "2026-03-20",  # Good Friday  ← this is why NVDA broke
-    "2026-04-03",  # Good Friday (bond market early close)
+    "2026-04-03",  # Good Friday 
     "2026-05-25",  # Memorial Day
     "2026-06-19",  # Juneteenth
     "2026-07-03",  # Independence Day (observed)
