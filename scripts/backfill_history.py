@@ -111,7 +111,7 @@ def fetch_winner_for_date(api_key, date_str):
             else:
                 print(f"  {ticker}: Failed (status {response.status})")
             
-            time.sleep(3)  # Rate limiting
+            time.sleep(5)  # Rate limiting
             
         except Exception as e:
             print(f"  {ticker}: Error - {e}")

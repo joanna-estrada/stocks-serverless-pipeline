@@ -15,12 +15,12 @@ Live Link [Stock Watchlist](https://main.d2o5xbreubwc5h.amplifyapp.com/)
 
 ## **Prequisites**
 
-- **AWS Account**
-- **AWS CLI** configured to us-west-1
+- **AWS Account - IAM User**
+- **AWS CLI** set to us-west-1
 ```
-aws configure
+aws login
+aws sts get-caller-identity
 ```
-> You will be prompted to input your AWS Access Key ID and AES Secret Access Key. Create these in AWS Identity Access Management (IAM). Configure.
 - **Node.js** (v18+ recommended)
 - **Python** (3.11+ recommended)
 - **npm** or **yarn**
@@ -61,7 +61,7 @@ pip install -r requirements.txt
 ```
 ### 4. Run one-time python script to load history.
 > Ensure to run from project root.
-> Prerequisite: aws configure
+> Prerequisite: aws login
 ```
 python scripts/backfill_history.py
 ```
