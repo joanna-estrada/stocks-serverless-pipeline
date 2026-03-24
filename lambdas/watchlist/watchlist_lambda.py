@@ -152,7 +152,7 @@ def build_watchlist_rows(api_key):
         })
         #Add delay between requests to avoid hitting API rate limits
         if ticker != WATCHLIST[-1]:
-            time.sleep(2.5)
+            time.sleep(3.5)
     return rows
 
 
