@@ -1,7 +1,7 @@
 # Stocks Serverless Pipeline
 This repository contains a serverless stock tracker built on AWS using CDK, Lambda, DynamoDB, API Gateway, and a Next.js frontend. It's purpose is to track greatest percent change of tracked stocks, each day.
 
-![Example of greatest daily mover](images\GMExample.png)
+![Example of greatest daily mover](images/GreatestMoverEx.png)
 
 Live Link [Stock Watchlist](https://main.d2o5xbreubwc5h.amplifyapp.com/)
 
