@@ -1,5 +1,7 @@
 # Stocks Serverless Pipeline
-This repository contains a serverless stock tracker built on AWS using CDK, Lambda, DynamoDB, API Gateway, and a Next.js frontend.
+This repository contains a serverless stock tracker built on AWS using CDK, Lambda, DynamoDB, API Gateway, and a Next.js frontend. It's purpose is to track greatest percent change of tracked stocks, each day.
+
+![Example of greatest daily mover](images\GMExample.png)
 
 Live Link [Stock Watchlist](https://main.d2o5xbreubwc5h.amplifyapp.com/)
 
@@ -14,13 +16,16 @@ Live Link [Stock Watchlist](https://main.d2o5xbreubwc5h.amplifyapp.com/)
 ## **Prequisites**
 
 - **AWS Account**
-- **AWS CLI** configured (`aws configure`)
+- **AWS CLI** configured to us-west-1
+```
+aws configure
+```
 > You will be prompted to input your AWS Access Key ID and AES Secret Access Key. Create these in AWS Identity Access Management (IAM). Configure.
 - **Node.js** (v18+ recommended)
 - **Python** (3.11+ recommended)
 - **npm** or **yarn**
-- **CDK CLI**:  
-  ```Bash
+- **CDK CLI**  
+  ```
   npm install -g aws-cdk
   ```
 
@@ -54,28 +59,37 @@ source .venv/Scripts/activate
 ```
 pip install -r requirements.txt
 ```
-### 4. Deploy the CDK stack
+### 4. Run one-time python script to load history.
+> Ensure to run from project root.
+> Prerequisite: aws configure
+```
+python scripts/backfill_history.py
+```
+### Deploy the CDK stack
 ```
 cdk deploy
 ```
 ---
 
-## Frontend Deployment (Next.js)
+## **Frontend Deployment (Next.js)**
 
-```Bash
 ### 2.1. Configure API endpoint
 Set the API Gateway URL as an environment variable for the frontend:
 
+```
 # In stocks-serverless-pipeline/frontend/.env.local
 NEXT_PUBLIC_STOCK_API_BASE_URL=https://<your-api-id>.execute-api.<region>.amazonaws.com/prod
-
+```
 ### 2.2. Install frontend dependencies
+```
 cd ../frontend
 npm install
 # or
 yarn install
+```
 
 ### 2.3. Run the frontend locally
+```
 npm run dev
 # or
 yarn dev
